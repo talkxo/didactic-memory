@@ -147,7 +147,32 @@ export default function CallingPage() {
 
       if (queryError) throw queryError;
 
-      setContacts((data as ContactRow[]) || []);
+      const rows: ContactRow[] = (data ?? []).map((c) => {
+        const raw = c as Record<string, unknown>;
+        const profile = raw.last_engaged_by_profile as
+          | { username: string | null }
+          | { username: string | null }[]
+          | null
+          | undefined;
+
+        const profileUsername = Array.isArray(profile)
+          ? profile[0]?.username ?? null
+          : profile?.username ?? null;
+
+        return {
+          id: raw.id as string,
+          full_name: (raw.full_name as string) ?? "",
+          org: (raw.org as string | null) ?? null,
+          phone: (raw.phone as string) ?? "",
+          email: (raw.email as string | null) ?? null,
+          last_engaged_at: (raw.last_engaged_at as string | null) ?? null,
+          last_engaged_by_profile: profileUsername
+            ? { username: profileUsername }
+            : null,
+        };
+      });
+
+      setContacts(rows);
       setNoteDraft(null);
     } catch (err) {
       console.error(err);
