@@ -61,31 +61,27 @@ export default function CallingPage() {
           throw queryError;
         }
 
-        type RawContact = {
-          id: string;
-          full_name: string;
-          org: string | null;
-          phone: string;
-          email: string | null;
-          last_engaged_at: string | null;
-          last_engaged_by_profile:
-            | {
-                username: string | null;
-              }
-            | null;
-        };
-
         const rows: ContactRow[] = (data ?? []).map((c) => {
-          const raw = c as RawContact;
+          const raw = c as Record<string, unknown>;
+          const profile = raw.last_engaged_by_profile as
+            | { username: string | null }
+            | { username: string | null }[]
+            | null
+            | undefined;
+
+          const profileUsername = Array.isArray(profile)
+            ? profile[0]?.username ?? null
+            : profile?.username ?? null;
+
           return {
-            id: raw.id,
-            full_name: raw.full_name,
-            org: raw.org,
-            phone: raw.phone,
-            email: raw.email,
-            last_engaged_at: raw.last_engaged_at,
-            last_engaged_by_profile: raw.last_engaged_by_profile
-              ? { username: raw.last_engaged_by_profile.username }
+            id: raw.id as string,
+            full_name: (raw.full_name as string) ?? "",
+            org: (raw.org as string | null) ?? null,
+            phone: (raw.phone as string) ?? "",
+            email: (raw.email as string | null) ?? null,
+            last_engaged_at: (raw.last_engaged_at as string | null) ?? null,
+            last_engaged_by_profile: profileUsername
+              ? { username: profileUsername }
               : null,
           };
         });
