@@ -61,7 +61,36 @@ export default function CallingPage() {
           throw queryError;
         }
 
-        setContacts((data as ContactRow[]) || []);
+        type RawContact = {
+          id: string;
+          full_name: string;
+          org: string | null;
+          phone: string;
+          email: string | null;
+          last_engaged_at: string | null;
+          last_engaged_by_profile:
+            | {
+                username: string | null;
+              }
+            | null;
+        };
+
+        const rows: ContactRow[] = (data ?? []).map((c) => {
+          const raw = c as RawContact;
+          return {
+            id: raw.id,
+            full_name: raw.full_name,
+            org: raw.org,
+            phone: raw.phone,
+            email: raw.email,
+            last_engaged_at: raw.last_engaged_at,
+            last_engaged_by_profile: raw.last_engaged_by_profile
+              ? { username: raw.last_engaged_by_profile.username }
+              : null,
+          };
+        });
+
+        setContacts(rows);
       } catch (err) {
         console.error(err);
         setError("Failed to load contacts.");
